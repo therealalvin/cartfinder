@@ -197,47 +197,35 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    // Theme Chooser Button (Clean, compact icon button - takes 0 main screen space)
-                    IconButton(
+                    // Compact Theme Selector Button (neat pill with active emoji & palette icon, keeping the title centered)
+                    Surface(
                         onClick = { showThemeDialog = true },
+                        shape = RoundedCornerShape(16.dp),
+                        color = palette.primaryContainer.copy(alpha = 0.85f),
+                        border = androidx.compose.foundation.BorderStroke(1.5.dp, palette.primary),
+                        shadowElevation = 1.dp,
                         modifier = Modifier
+                            .padding(end = 8.dp)
+                            .height(36.dp)
                             .testTag("open_theme_chooser_button")
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .background(palette.primaryContainer),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+                            Text(
+                                text = palette.emoji,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
                             Icon(
                                 imageVector = Icons.Default.Palette,
-                                contentDescription = "Change Theme",
+                                contentDescription = "Change Color Theme",
                                 tint = palette.primary,
-                                modifier = Modifier.size(19.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
-
-                    // Demo Mode toggle button
-                    FilterChip(
-                        selected = uiState.isSimulatingDemo,
-                        onClick = { viewModel.toggleDemoSimulation() },
-                        label = {
-                            Text(
-                                text = if (uiState.isSimulatingDemo) "Demo On" else "Demo",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = palette.secondary,
-                            selectedLabelColor = palette.onSecondary
-                        ),
-                        modifier = Modifier
-                            .padding(end = 6.dp)
-                            .testTag("demo_mode_toggle")
-                    )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = palette.surface
@@ -328,7 +316,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.width(6.dp))
                         val accText = uiState.gpsAccuracyMeters?.let { "±${it.toInt()}m" } ?: "Searching..."
                         Text(
-                            text = if (uiState.isSimulatingDemo) "Demo: Lake Sumter Landing ($accText)" else "GPS Status: $accText",
+                            text = "GPS Status: $accText",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = palette.onSurface
@@ -638,37 +626,6 @@ fun HomeScreen(
                         onUnitClick = { viewModel.setPreferredUnit(it) },
                         modifier = Modifier.fillMaxWidth()
                     )
-                }
-
-                // Demo "Walk Closer" Button (only visible when Demo simulation active)
-                if (uiState.isSimulatingDemo) {
-                    item {
-                        Button(
-                            onClick = { viewModel.simulateWalkCloser() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                                .testTag("demo_walk_closer_button"),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = palette.secondary,
-                                contentColor = palette.onSecondary
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.DirectionsWalk,
-                                contentDescription = null,
-                                tint = palette.onSecondary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Demo: Simulate Walking 35% Closer",
-                                color = palette.onSecondary,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
                 }
 
                 // Arrival & Forget Location Card

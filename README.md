@@ -47,9 +47,6 @@
 - **🚶 Turn-by-Turn Google Maps Integration**  
   One-tap button to launch walking directions directly in Google Maps if you prefer turn-by-turn spoken guidance through the square.
 
-- **🕹️ Built-In Demo Mode (The Villages, FL)**  
-  A built-in demo simulation switch defaults to Lake Sumter Landing Market Square in The Villages, FL (`28.8950, -81.9705`), allowing seamless demonstration and testing of distance calculation and arrival HUD.
-
 ---
 
 ## 🛠️ Tech Stack & Architecture

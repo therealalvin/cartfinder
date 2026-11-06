@@ -40,8 +40,7 @@ data class CartFinderUiState(
     val isArrived: Boolean = false,
     val preferredUnit: DistanceUnit = DistanceUnit.YARDS,
     val floridaTheme: FloridaTheme = FloridaTheme.CITRUS,
-    val message: String? = null,
-    val isSimulatingDemo: Boolean = false
+    val message: String? = null
 )
 
 class CartFinderViewModel(application: Application) : AndroidViewModel(application) {
@@ -54,7 +53,6 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
 
     private var locationUpdatesJob: Job? = null
     private var compassJob: Job? = null
-    private var simulatedDemoJob: Job? = null
 
     init {
         // Collect repository parked location
@@ -227,67 +225,6 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.value = _uiState.value.copy(message = null)
     }
 
-    fun toggleDemoSimulation() {
-        val willSimulate = !_uiState.value.isSimulatingDemo
-        _uiState.value = _uiState.value.copy(isSimulatingDemo = willSimulate)
-
-        if (willSimulate) {
-            // Setup demo location: Lake Sumter Landing Market Square in The Villages, Florida
-            val baseLat = 28.8950
-            val baseLng = -81.9705
-            val cartLat = 28.8957
-            val cartLng = -81.9698
-
-            val mockUserLoc = Location("demo").apply {
-                latitude = baseLat
-                longitude = baseLng
-                accuracy = 2.5f
-                time = System.currentTimeMillis()
-            }
-            _uiState.value = _uiState.value.copy(
-                hasLocationPermission = true,
-                currentLocation = mockUserLoc,
-                gpsAccuracyMeters = 2.5f
-            )
-
-            if (_uiState.value.parkedLocation == null) {
-                val demoCart = GolfCartLocation(
-                    latitude = cartLat,
-                    longitude = cartLng,
-                    accuracyMeters = 2.0f,
-                    spotLabel = "Lake Sumter Square - Row 4 near City Fire",
-                    note = "Yamaha QuietTech, beige canopy"
-                )
-                repository.saveParkedLocation(demoCart)
-            }
-            recalculateNavigationMetrics()
-            _uiState.value = _uiState.value.copy(message = "The Villages (Lake Sumter Square) demo active")
-        } else {
-            // Stop simulation and revert to real GPS
-            startTracking()
-            _uiState.value = _uiState.value.copy(message = "Switched to real device GPS")
-        }
-    }
-
-    fun simulateWalkCloser() {
-        val cart = _uiState.value.parkedLocation ?: return
-        val current = _uiState.value.currentLocation ?: return
-
-        // Step 35% closer to cart
-        val newLat = current.latitude + (cart.latitude - current.latitude) * 0.35
-        val newLng = current.longitude + (cart.longitude - current.longitude) * 0.35
-
-        val updatedLoc = Location(current.provider).apply {
-            latitude = newLat
-            longitude = newLng
-            accuracy = 1.8f
-            time = System.currentTimeMillis()
-        }
-
-        _uiState.value = _uiState.value.copy(currentLocation = updatedLoc)
-        recalculateNavigationMetrics()
-    }
-
     private fun recalculateNavigationMetrics() {
         val userLoc = _uiState.value.currentLocation
         val cart = _uiState.value.parkedLocation
@@ -366,6 +303,5 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
         super.onCleared()
         locationUpdatesJob?.cancel()
         compassJob?.cancel()
-        simulatedDemoJob?.cancel()
     }
 }
