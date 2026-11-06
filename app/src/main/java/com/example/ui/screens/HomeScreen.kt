@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -763,6 +764,10 @@ fun HomeScreen(
     if (showPhotoArrivalDialog) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { showPhotoArrivalDialog = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .clip(RoundedCornerShape(24.dp)),
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -781,10 +786,10 @@ fun HomeScreen(
                 }
             },
             text = {
-                Column {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = "You have a photo attached to this parking spot. Would you like to delete the photo or save a copy to your phone's photo gallery?",
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         color = Color(0xFF374151)
                     )
                     Spacer(modifier = Modifier.height(18.dp))
@@ -799,24 +804,39 @@ fun HomeScreen(
                             containerColor = Color(0xFFDC2626),
                             contentColor = Color.White
                         ),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
+                            .heightIn(min = 54.dp)
                             .testTag("delete_photo_arrival_button")
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Delete Photo & Forget Spot",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Delete Photo",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "Permanently remove & clear spot",
+                                    fontSize = 12.sp,
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -831,24 +851,39 @@ fun HomeScreen(
                             containerColor = palette.primary,
                             contentColor = palette.onPrimary
                         ),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(52.dp)
+                            .heightIn(min = 54.dp)
                             .testTag("save_photo_arrival_button")
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
-                            tint = palette.onPrimary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Save Photo to Photos & Forget",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = palette.onPrimary
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = palette.onPrimary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Save Photo to Photos",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = palette.onPrimary
+                                )
+                                Text(
+                                    text = "Keep in phone gallery & clear spot",
+                                    fontSize = 12.sp,
+                                    color = palette.onPrimary.copy(alpha = 0.9f)
+                                )
+                            }
+                        }
                     }
                 }
             },
