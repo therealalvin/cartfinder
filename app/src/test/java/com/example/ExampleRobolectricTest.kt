@@ -34,13 +34,15 @@ class ExampleRobolectricTest {
     // Save parked location
     val spot = GolfCartLocation(
         id = "test_cart_1",
-        latitude = 36.5688,
-        longitude = -121.9486,
+        latitude = 28.8950,
+        longitude = -81.9705,
         accuracyMeters = 2.5f,
-        spotLabel = "Bay 12 Clubhouse"
+        spotLabel = "Lake Sumter Row 3",
+        photoUriString = "content://com.aistudio.golfcart.kxvlmp.fileprovider/cart_images/test.jpg"
     )
     repo.saveParkedLocation(spot)
     assertEquals(spot, repo.currentParkedLocation.value)
+    assertEquals("content://com.aistudio.golfcart.kxvlmp.fileprovider/cart_images/test.jpg", repo.currentParkedLocation.value?.photoUriString)
 
     // Clear parked location (completely forgets the point)
     repo.clearParkedLocation()
@@ -54,5 +56,18 @@ class ExampleRobolectricTest {
         36.5694, -121.9478
     )
     assertTrue("Distance should be greater than 0", dist > 10f)
+  }
+
+  @Test
+  fun `florida theme persists across repository re-initialization`() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val repo1 = CartLocationRepository(context)
+
+    repo1.setFloridaTheme(com.example.ui.theme.FloridaTheme.KEY_WEST)
+    assertEquals(com.example.ui.theme.FloridaTheme.KEY_WEST, repo1.floridaTheme.value)
+
+    // Reinitialize repository to test persistence from SharedPreferences
+    val repo2 = CartLocationRepository(context)
+    assertEquals(com.example.ui.theme.FloridaTheme.KEY_WEST, repo2.floridaTheme.value)
   }
 }

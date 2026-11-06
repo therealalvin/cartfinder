@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.DistanceUnit
+import com.example.ui.theme.LocalFloridaTheme
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -57,6 +58,8 @@ fun CompassBearingHud(
     onUnitClick: (DistanceUnit) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val palette = LocalFloridaTheme.current.palette
+
     // Formatted distance string
     val distanceDisplay = when (unit) {
         DistanceUnit.YARDS -> {
@@ -76,7 +79,7 @@ fun CompassBearingHud(
     val isFacingCart = needleAngle in 0f..15f || needleAngle in 345f..360f
 
     val dialRingColor by animateColorAsState(
-        targetValue = if (isFacingCart) Color(0xFF1B4332) else Color(0xFF9CA3AF),
+        targetValue = if (isFacingCart) palette.primary else Color(0xFF9CA3AF),
         animationSpec = tween(300),
         label = "dialColor"
     )
@@ -91,10 +94,10 @@ fun CompassBearingHud(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .border(1.5.dp, Color(0xFFD1D5DB), RoundedCornerShape(24.dp))
+            .border(1.5.dp, palette.cardBorder, RoundedCornerShape(24.dp))
             .testTag("compass_bearing_hud"),
         tonalElevation = 2.dp,
-        color = Color(0xFFF9FAFB)
+        color = palette.surface
     ) {
         Column(
             modifier = Modifier.padding(18.dp),
@@ -109,7 +112,7 @@ fun CompassBearingHud(
                 Text(
                     text = "WALKING GUIDANCE",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF111827),
+                    color = palette.onSurface,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp
@@ -119,16 +122,16 @@ fun CompassBearingHud(
                 Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFE5E7EB))
-                        .border(1.dp, Color(0xFFD1D5DB), RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF3F4F6))
+                        .border(1.dp, palette.cardBorder, RoundedCornerShape(12.dp))
                         .padding(3.dp)
                 ) {
-                    DistanceUnit.values().forEach { u ->
+                    DistanceUnit.entries.forEach { u ->
                         val selected = u == unit
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (selected) Color(0xFF1B4332) else Color.Transparent)
+                                .background(if (selected) palette.primary else Color.Transparent)
                                 .clickable { onUnitClick(u) }
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                                 .testTag("unit_toggle_${u.name.lowercase()}"),
@@ -139,7 +142,7 @@ fun CompassBearingHud(
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontSize = 14.sp,
                                 fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.Bold,
-                                color = if (selected) Color.White else Color(0xFF374151)
+                                color = if (selected) palette.onPrimary else Color(0xFF374151)
                             )
                         }
                     }
@@ -157,7 +160,7 @@ fun CompassBearingHud(
                         Brush.radialGradient(
                             listOf(
                                 Color.White,
-                                Color(0xFFEDF2F7)
+                                palette.primaryContainer.copy(alpha = 0.25f)
                             )
                         )
                     )
@@ -180,7 +183,7 @@ fun CompassBearingHud(
                         val endY = center.y + (radius - 8.dp.toPx() - tickLength) * sin(angleRad).toFloat()
 
                         drawLine(
-                            color = if (degree == 0) Color(0xFFDC2626) else Color(0xFF6B7280),
+                            color = if (degree == 0) palette.pinAccent else Color(0xFF6B7280),
                             start = Offset(startX, startY),
                             end = Offset(endX, endY),
                             strokeWidth = strokeWidth
@@ -200,7 +203,7 @@ fun CompassBearingHud(
                         val needleLength = size.minDimension / 2f - 20.dp.toPx()
 
                         // North / Target Arrow
-                        val arrowColor = if (isFacingCart) Color(0xFF1B4332) else Color(0xFFE63946)
+                        val arrowColor = if (isFacingCart) palette.primary else palette.pinAccent
                         val arrowPath = Path().apply {
                             moveTo(center.x, center.y - needleLength)
                             lineTo(center.x - 15.dp.toPx(), center.y - 15.dp.toPx())
@@ -224,7 +227,7 @@ fun CompassBearingHud(
                             lineTo(center.x, center.y)
                             close()
                         }
-                        drawPath(tailPath, color = Color(0xFF4B5563))
+                        drawPath(tailPath, color = Color(0xFF64748B))
                     }
 
                     // Top golf pin icon atop needle tip
@@ -234,7 +237,7 @@ fun CompassBearingHud(
                             .padding(top = 14.dp)
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFE63946))
+                            .background(palette.pinAccent)
                             .border(2.dp, Color.White, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
@@ -253,7 +256,7 @@ fun CompassBearingHud(
                         .size(105.dp)
                         .clip(CircleShape)
                         .background(Color.White)
-                        .border(2.5.dp, Color(0xFFD1D5DB), CircleShape)
+                        .border(2.5.dp, palette.cardBorder, CircleShape)
                         .shadow(4.dp, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
@@ -264,14 +267,14 @@ fun CompassBearingHud(
                             text = distanceDisplay,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color(0xFF1B4332)
+                            color = palette.primary
                         )
                         Text(
                             text = "TO CART",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
                             letterSpacing = 0.5.sp,
-                            color = Color(0xFF374151)
+                            color = Color(0xFF475569)
                         )
                     }
                 }
@@ -292,11 +295,11 @@ fun CompassBearingHud(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
                     .background(
-                        if (isFacingCart) Color(0xFFD8F3DC) else Color(0xFFFFFFFF)
+                        if (isFacingCart) palette.primaryContainer else Color.White
                     )
                     .border(
                         2.dp,
-                        if (isFacingCart) Color(0xFF2D6A4F) else Color(0xFFD1D5DB),
+                        if (isFacingCart) palette.primary else palette.cardBorder,
                         RoundedCornerShape(16.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -306,15 +309,15 @@ fun CompassBearingHud(
                 Icon(
                     imageVector = if (isFacingCart) Icons.Default.CheckCircle else Icons.Default.Navigation,
                     contentDescription = null,
-                    tint = if (isFacingCart) Color(0xFF1B4332) else Color(0xFF1B4332),
+                    tint = if (isFacingCart) palette.primary else Color(0xFF64748B),
                     modifier = Modifier.size(22.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = statusText,
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isFacingCart) Color(0xFF081C15) else Color(0xFF111827)
+                    color = if (isFacingCart) palette.onPrimaryContainer else palette.onSurface
                 )
             }
         }

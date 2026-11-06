@@ -7,7 +7,8 @@ data class GolfCartLocation(
     val accuracyMeters: Float,
     val timestamp: Long = System.currentTimeMillis(),
     val spotLabel: String = "",
-    val note: String = ""
+    val note: String = "",
+    val photoUriString: String? = null
 )
 
 enum class DistanceUnit(val label: String, val shortLabel: String) {

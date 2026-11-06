@@ -3,10 +3,12 @@ package com.example.ui.viewmodel
 import android.app.Application
 import android.content.Context
 import android.location.Location
+import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.model.DistanceUnit
@@ -20,7 +22,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import com.example.ui.theme.FloridaTheme
 import kotlinx.coroutines.launch
+import java.io.File
 
 data class CartFinderUiState(
     val hasLocationPermission: Boolean = false,
@@ -35,6 +39,7 @@ data class CartFinderUiState(
     val relativeNeedleAngle: Float = 0f,
     val isArrived: Boolean = false,
     val preferredUnit: DistanceUnit = DistanceUnit.YARDS,
+    val floridaTheme: FloridaTheme = FloridaTheme.CITRUS,
     val message: String? = null,
     val isSimulatingDemo: Boolean = false
 )
@@ -67,6 +72,13 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             repository.preferredUnit.collect { unit ->
                 _uiState.value = _uiState.value.copy(preferredUnit = unit)
+            }
+        }
+
+        // Collect Florida theme
+        viewModelScope.launch {
+            repository.floridaTheme.collect { theme ->
+                _uiState.value = _uiState.value.copy(floridaTheme = theme)
             }
         }
     }
@@ -122,7 +134,18 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.value = _uiState.value.copy(isLocatingGps = false)
     }
 
-    fun markCurrentLocationAsParked(spotLabel: String = "", note: String = "") {
+    fun createTempPhotoUri(): Uri {
+        val context = getApplication<Application>()
+        val photosDir = File(context.cacheDir, "cart_photos")
+        if (!photosDir.exists()) {
+            photosDir.mkdirs()
+        }
+        val photoFile = File(photosDir, "cart_spot_${System.currentTimeMillis()}.jpg")
+        val authority = "${context.packageName}.fileprovider"
+        return FileProvider.getUriForFile(context, authority, photoFile)
+    }
+
+    fun markCurrentLocationAsParked(spotLabel: String = "", note: String = "", photoUriString: String? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLocatingGps = true)
             val currentLoc = _uiState.value.currentLocation
@@ -136,23 +159,26 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
                     longitude = currentLoc.longitude,
                     accuracyMeters = currentLoc.accuracy,
                     spotLabel = spotLabel.ifBlank { "Golf Cart Spot" },
-                    note = note
+                    note = note,
+                    photoUriString = photoUriString
                 )
                 repository.saveParkedLocation(newParked)
                 vibrateFeedback(longVibe = true)
+                val photoNote = if (!photoUriString.isNullOrBlank()) " with photo attached" else ""
                 _uiState.value = _uiState.value.copy(
-                    message = "Golf cart marked at ${String.format("%.5f, %.5f", newParked.latitude, newParked.longitude)} (±${newParked.accuracyMeters.toInt()}m)"
+                    message = "Golf cart marked at ${String.format("%.5f, %.5f", newParked.latitude, newParked.longitude)}$photoNote (±${newParked.accuracyMeters.toInt()}m)"
                 )
             } else {
                 // If on an emulator where GPS hasn't fired yet, provide fallback coordinate
-                val fallbackLat = 33.4255
-                val fallbackLng = -111.9400
+                val fallbackLat = 28.8950
+                val fallbackLng = -81.9705
                 val fallback = GolfCartLocation(
                     latitude = fallbackLat,
                     longitude = fallbackLng,
                     accuracyMeters = 3.5f,
-                    spotLabel = spotLabel.ifBlank { "Hole 18 Clubhouse Cart Bay" },
-                    note = note
+                    spotLabel = spotLabel.ifBlank { "Lake Sumter Landing Plaza" },
+                    note = note,
+                    photoUriString = photoUriString
                 )
                 repository.saveParkedLocation(fallback)
                 vibrateFeedback(longVibe = true)
@@ -163,20 +189,38 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun clearParkedLocation() {
-        repository.clearParkedLocation()
-        vibrateFeedback(longVibe = false)
-        _uiState.value = _uiState.value.copy(
-            parkedLocation = null,
-            distanceMeters = null,
-            bearingDegrees = null,
-            isArrived = false,
-            message = "Golf cart location cleared. Ready for your next round!"
-        )
+    fun clearParkedLocation(savePhotoToGallery: Boolean = false) {
+        val currentPhoto = _uiState.value.parkedLocation?.photoUriString
+        if (savePhotoToGallery && !currentPhoto.isNullOrBlank()) {
+            val saved = repository.savePhotoToGallery(currentPhoto)
+            repository.clearParkedLocation(deletePhoto = true)
+            vibrateFeedback(longVibe = false)
+            _uiState.value = _uiState.value.copy(
+                parkedLocation = null,
+                distanceMeters = null,
+                bearingDegrees = null,
+                isArrived = false,
+                message = if (saved) "Photo saved to your Photos gallery. Spot cleared!" else "Spot cleared."
+            )
+        } else {
+            repository.clearParkedLocation(deletePhoto = true)
+            vibrateFeedback(longVibe = false)
+            _uiState.value = _uiState.value.copy(
+                parkedLocation = null,
+                distanceMeters = null,
+                bearingDegrees = null,
+                isArrived = false,
+                message = "Golf cart spot cleared. Ready for your next stop!"
+            )
+        }
     }
 
     fun setPreferredUnit(unit: DistanceUnit) {
         repository.setPreferredUnit(unit)
+    }
+
+    fun setFloridaTheme(theme: FloridaTheme) {
+        repository.setFloridaTheme(theme)
     }
 
     fun clearMessage() {
@@ -188,11 +232,11 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.value = _uiState.value.copy(isSimulatingDemo = willSimulate)
 
         if (willSimulate) {
-            // Setup demo course location: Pebble Beach / Golf Resort
-            val baseLat = 36.5688
-            val baseLng = -121.9486
-            val cartLat = 36.5694
-            val cartLng = -121.9478
+            // Setup demo location: Lake Sumter Landing Market Square in The Villages, Florida
+            val baseLat = 28.8950
+            val baseLng = -81.9705
+            val cartLat = 28.8957
+            val cartLng = -81.9698
 
             val mockUserLoc = Location("demo").apply {
                 latitude = baseLat
@@ -211,13 +255,13 @@ class CartFinderViewModel(application: Application) : AndroidViewModel(applicati
                     latitude = cartLat,
                     longitude = cartLng,
                     accuracyMeters = 2.0f,
-                    spotLabel = "Cart Bay #7 (Clubhouse Turn)",
-                    note = "Red EZ-GO cart with cooler"
+                    spotLabel = "Lake Sumter Square - Row 4 near City Fire",
+                    note = "Yamaha QuietTech, beige canopy"
                 )
                 repository.saveParkedLocation(demoCart)
             }
             recalculateNavigationMetrics()
-            _uiState.value = _uiState.value.copy(message = "Demo Golf Course Simulation active")
+            _uiState.value = _uiState.value.copy(message = "The Villages (Lake Sumter Square) demo active")
         } else {
             // Stop simulation and revert to real GPS
             startTracking()

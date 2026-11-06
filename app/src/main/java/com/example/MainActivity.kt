@@ -8,6 +8,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.example.ui.screens.HomeScreen
 import com.example.ui.theme.CartFinderTheme
 import com.example.ui.viewmodel.CartFinderViewModel
@@ -19,7 +21,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            CartFinderTheme {
+            val uiState by viewModel.uiState.collectAsState()
+            CartFinderTheme(floridaTheme = uiState.floridaTheme) {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     HomeScreen(viewModel = viewModel)
                 }

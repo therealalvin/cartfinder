@@ -16,7 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DeleteSweep
-import androidx.compose.material.icons.filled.SportsGolf
+import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.LocalFloridaTheme
 
 @Composable
 fun ArrivalCard(
@@ -39,17 +40,19 @@ fun ArrivalCard(
     onClearLocation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val palette = LocalFloridaTheme.current.palette
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .border(
                 2.dp,
-                if (isArrived) Color(0xFF2D6A4F) else Color(0xFFD1D5DB),
+                if (isArrived) palette.primary else palette.cardBorder,
                 RoundedCornerShape(20.dp)
             )
             .testTag("arrival_card"),
-        color = if (isArrived) Color(0xFFD8F3DC) else Color(0xFFF9FAFB),
+        color = if (isArrived) palette.primaryContainer else palette.surface,
         tonalElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
@@ -58,13 +61,13 @@ fun ArrivalCard(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(if (isArrived) Color(0xFF1B4332) else Color(0xFFD8F3DC)),
+                        .background(if (isArrived) palette.primary else palette.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (isArrived) Icons.Default.Check else Icons.Default.SportsGolf,
+                        imageVector = if (isArrived) Icons.Default.Check else Icons.Default.DirectionsCar,
                         contentDescription = null,
-                        tint = if (isArrived) Color.White else Color(0xFF1B4332),
+                        tint = if (isArrived) palette.onPrimary else palette.primary,
                         modifier = Modifier.size(26.dp)
                     )
                 }
@@ -73,18 +76,18 @@ fun ArrivalCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = if (isArrived) "You Have Arrived!" else "Back at your golf cart?",
+                        text = if (isArrived) "You're At Your Golf Cart!" else "Back at your golf cart?",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF111827)
+                        color = palette.onSurface
                     )
                     Text(
                         text = if (isArrived)
-                            "Clear the spot now so you can mark a new one next time."
+                            "Clear this spot now so you can mark your next stop around town."
                         else
                             "Forget saved coordinates when you're done driving.",
                         fontSize = 14.sp,
-                        color = Color(0xFF374151)
+                        color = Color(0xFF4B5563)
                     )
                 }
             }
@@ -98,7 +101,7 @@ fun ArrivalCard(
                     .height(54.dp)
                     .testTag("clear_parked_spot_button"),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isArrived) Color(0xFF1B4332) else Color(0xFFB91C1C),
+                    containerColor = if (isArrived) palette.primary else Color(0xFFDC2626),
                     contentColor = Color.White
                 ),
                 shape = RoundedCornerShape(14.dp)

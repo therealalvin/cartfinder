@@ -1,6 +1,6 @@
 {
   "name": "CartFinder",
-  "description": "Locate where you parked your golf cart with high-precision GPS tracking, interactive map guidance, compass bearing, and one-tap spot clearing.",
+  "description": "Easily mark and locate where you parked your golf cart in The Villages, Florida — outside town squares, shopping plazas, restaurants, and recreation centers.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
